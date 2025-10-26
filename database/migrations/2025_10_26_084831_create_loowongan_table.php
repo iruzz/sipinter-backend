@@ -6,20 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('lowongan_magang', function (Blueprint $table) {
+        Schema::create('lowongan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('perusahaan_id')->constrained('perusahaan_profiles')->onDelete('cascade');
+            $table->enum('tipe_lowongan', ['magang', 'kerja'])->default('magang'); // <--- baru
             $table->string('judul');
             $table->text('deskripsi');
             $table->text('persyaratan');
             $table->integer('jumlah_posisi')->default(1);
             $table->string('lokasi');
-            $table->integer('durasi_magang'); // dalam bulan
+            $table->integer('durasi_magang')->nullable(); // hanya untuk magang
             $table->decimal('gaji', 10, 2)->nullable();
             $table->date('tanggal_mulai');
             $table->date('tanggal_selesai');
@@ -30,11 +28,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('lowongan_magang');
+        Schema::dropIfExists('lowongan');
     }
 };

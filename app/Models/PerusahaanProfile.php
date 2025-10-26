@@ -9,32 +9,32 @@ class PerusahaanProfile extends Model
 {
     use HasFactory;
 
+    protected $table = 'perusahaan_profiles'; // pastikan sesuai di DB
+
     protected $fillable = [
         'user_id',
         'nama_perusahaan',
-        'bidang_usaha',
         'alamat',
-        'kota',
-        'provinsi',
-        'telepon',
-        'website',
         'deskripsi',
+        'no_telp',
+        'email_perusahaan',
         'logo',
-        'pic_name',
-        'pic_jabatan',
-        'pic_telepon',
-        'pic_email',
-        'status_verifikasi',
+        'website',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
-    // Relationship
+    /**
+     * Relasi ke user
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relasi ke lowongan
+     */
+    public function lowongans()
+    {
+        return $this->hasMany(Lowongan::class, 'perusahaan_id');
     }
 }

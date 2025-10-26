@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PerusahaanProfileController;
+use App\Http\Controllers\AdminLowonganMagangController;
 use App\Http\Controllers\SiswaProfileController; // ← Tambah import ini
 
 // === PUBLIC ROUTES ===
@@ -47,15 +48,14 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
             Route::post('/perusahaan-profiles/{id}/verify', [PerusahaanProfileController::class, 'verify']);
             Route::post('/perusahaan-profiles/{id}/reject', [PerusahaanProfileController::class, 'reject']);
             
-            Route::prefix('lowongan-magang')->group(function () {
-    Route::get('/', [AdminLowonganMagangController::class, 'index']);
-    Route::post('/', [AdminLowonganMagangController::class, 'store']);
-    Route::get('/{lowongan}', [AdminLowonganMagangController::class, 'show']);
-    Route::put('/{lowongan}', [AdminLowonganMagangController::class, 'update']);
-    Route::delete('/{lowongan}', [AdminLowonganMagangController::class, 'destroy']);
-    Route::post('/{lowongan}/approve', [AdminLowonganMagangController::class, 'approve']);
-    Route::post('/{lowongan}/reject', [AdminLowonganMagangController::class, 'reject']);
-});
+             Route::get('/lowongan', [AdminLowonganMagangController::class, 'index']);
+            Route::get('/lowongan/statistics', [AdminLowonganMagangController::class, 'statistics']);
+            Route::get('/lowongan/{id}', [AdminLowonganMagangController::class, 'show']);
+            Route::put('/lowongan/{id}', [AdminLowonganMagangController::class, 'update']);
+            Route::delete('/lowongan/{id}', [AdminLowonganMagangController::class, 'destroy']);
+            Route::post('/lowongan/{id}/approve', [AdminLowonganMagangController::class, 'approve']);
+            Route::post('/lowongan/{id}/reject', [AdminLowonganMagangController::class, 'reject']);
+        
         });
 
     // === SISWA ===
@@ -79,4 +79,22 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
            Route::get('/profile', [PerusahaanProfileController::class, 'show']);
         Route::post('/profile', [PerusahaanProfileController::class, 'store']);
     });
+
+    Route::get('/test-lowongan', function() {
+    try {
+        $lowongan = \App\Models\LowonganMagang::with('perusahaan')->get();
+        return response()->json([
+            'success' => true,
+            'count' => $lowongan->count(),
+            'data' => $lowongan
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ], 500);
+    }
+});
 });

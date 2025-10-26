@@ -1,166 +1,203 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\LowonganMagang;
+use App\Models\Lowongan;
+use App\Models\PerusahaanProfile;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AdminLowonganMagangController extends Controller
 {
-    /**
-     * Display a listing of lowongan magang (dengan pagination, search, filter).
-     */
+    // Get all lowongan
     public function index(Request $request)
     {
-        $query = LowonganMagang::with('perusahaan')
-            ->when($request->search, function ($q) use ($request) {
-                $q->where('judul', 'like', '%' . $request->search . '%')
-                  ->orWhere('lokasi', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('perusahaan', function ($sub) use ($request) {
-                      $sub->where('nama_perusahaan', 'like', '%' . $request->search . '%');
+        $perPage = $request->get('per_page', 10);
+        $search = $request->get('search', '');
+        $tipe = $request->get('tipe_lowongan', '');
+        $statusApproval = $request->get('status_approval', '');
+        $status = $request->get('status', '');
+
+        $query = Lowongan::with('perusahaan.user');
+
+        // Filter pencarian
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%")
+                  ->orWhereHas('perusahaan', function($q) use ($search) {
+                      $q->where('nama_perusahaan', 'like', "%{$search}%");
                   });
-            })
-            ->when($request->status_approval, function ($q) use ($request) {
-                $q->where('status_approval', $request->status_approval);
-            })
-            ->when($request->status, function ($q) use ($request) {
-                $q->where('status', $request->status);
             });
+        }
 
-        $lowongan = $query->paginate(10)->appends($request->query());
+        // Filter tipe lowongan
+        if ($tipe) {
+            $query->where('tipe_lowongan', $tipe);
+        }
 
-        return response()->json([
-            'success' => true,
-            'data' => $lowongan,
-        ]);
-    }
+        // Filter status approval
+        if ($statusApproval) {
+            $query->where('status_approval', $statusApproval);
+        }
 
-    /**
-     * Store a newly created lowongan magang (admin jarang buat, tapi untuk completeness).
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'perusahaan_id' => 'required|exists:perusahaan_profiles,id',
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'persyaratan' => 'required|string',
-            'jumlah_posisi' => 'required|integer|min:1',
-            'lokasi' => 'required|string|max:255',
-            'durasi_magang' => 'required|integer|min:1|max:12',
-            'gaji' => 'nullable|numeric|min:0',
-            'tanggal_mulai' => 'required|date|after_or_equal:today',
-            'tanggal_selesai' => 'required|date|after:tanggal_mulai',
-            'status' => ['required', Rule::in(['draft', 'aktif', 'nonaktif', 'ditutup'])],
-            'status_approval' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
-            'catatan_admin' => 'nullable|string',
-        ]);
+        // Filter status
+        if ($status) {
+            $query->where('status', $status);
+        }
 
-        $lowongan = LowonganMagang::create($validated);
+        $lowongan = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan magang berhasil dibuat.',
-            'data' => $lowongan->load('perusahaan'),
-        ], 201);
-    }
-
-    /**
-     * Display the specified lowongan magang.
-     */
-    public function show(LowonganMagang $lowongan)
-    {
-        $lowongan->load('perusahaan');
-
-        return response()->json([
-            'success' => true,
-            'data' => $lowongan,
+            'data' => $lowongan
         ]);
     }
 
-    /**
-     * Update the specified lowongan magang (untuk update catatan admin atau status).
-     */
-    public function update(Request $request, LowonganMagang $lowongan)
+    // Get lowongan by ID
+    public function show($id)
     {
-        $validated = $request->validate([
+        $lowongan = Lowongan::with('perusahaan.user')->find($id);
+
+        if (!$lowongan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lowongan tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $lowongan
+        ]);
+    }
+
+    // Update lowongan
+    public function update(Request $request, $id)
+    {
+        $lowongan = Lowongan::find($id);
+
+        if (!$lowongan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lowongan tidak ditemukan'
+            ], 404);
+        }
+
+        $rules = [
             'judul' => 'sometimes|required|string|max:255',
             'deskripsi' => 'sometimes|required|string',
             'persyaratan' => 'sometimes|required|string',
             'jumlah_posisi' => 'sometimes|required|integer|min:1',
             'lokasi' => 'sometimes|required|string|max:255',
-            'durasi_magang' => 'sometimes|required|integer|min:1|max:12',
+            'durasi_magang' => 'nullable|integer|min:1',
             'gaji' => 'nullable|numeric|min:0',
-            'tanggal_mulai' => 'sometimes|required|date|after_or_equal:today',
+            'tanggal_mulai' => 'sometimes|required|date',
             'tanggal_selesai' => 'sometimes|required|date|after:tanggal_mulai',
-            'status' => ['sometimes', Rule::in(['draft', 'aktif', 'nonaktif', 'ditutup'])],
-            'status_approval' => ['sometimes', Rule::in(['pending', 'approved', 'rejected'])],
+            'status' => 'sometimes|required|in:draft,aktif,nonaktif,ditutup',
+            'status_approval' => 'sometimes|required|in:pending,approved,rejected',
             'catatan_admin' => 'nullable|string',
-        ]);
+        ];
 
+        $validated = $request->validate($rules);
         $lowongan->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan magang berhasil diupdate.',
-            'data' => $lowongan->load('perusahaan'),
+            'message' => 'Lowongan berhasil diupdate',
+            'data' => $lowongan->load('perusahaan.user')
         ]);
     }
 
-    /**
-     * Remove the specified lowongan magang.
-     */
-    public function destroy(LowonganMagang $lowongan)
+    // Delete lowongan
+    public function destroy($id)
     {
+        $lowongan = Lowongan::find($id);
+
+        if (!$lowongan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lowongan tidak ditemukan'
+            ], 404);
+        }
+
         $lowongan->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan magang berhasil dihapus.',
+            'message' => 'Lowongan berhasil dihapus'
         ]);
     }
 
-    /**
-     * Approve lowongan magang.
-     */
-    public function approve(Request $request, LowonganMagang $lowongan)
+    // Approve lowongan
+    public function approve(Request $request, $id)
     {
-        $validated = $request->validate([
-            'catatan_admin' => 'nullable|string',
-        ]);
+        $lowongan = Lowongan::find($id);
+
+        if (!$lowongan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lowongan tidak ditemukan'
+            ], 404);
+        }
 
         $lowongan->update([
             'status_approval' => 'approved',
-            'catatan_admin' => $validated['catatan_admin'] ?? $lowongan->catatan_admin,
+            'status' => 'aktif',
+            'catatan_admin' => $request->input('catatan_admin', null)
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan magang berhasil disetujui.',
-            'data' => $lowongan->load('perusahaan'),
+            'message' => 'Lowongan berhasil disetujui',
+            'data' => $lowongan->load('perusahaan.user')
         ]);
     }
 
-    /**
-     * Reject lowongan magang.
-     */
-    public function reject(Request $request, LowonganMagang $lowongan)
+    // Reject lowongan
+    public function reject(Request $request, $id)
     {
-        $validated = $request->validate([
-            'catatan_admin' => 'required|string',
+        $request->validate([
+            'catatan_admin' => 'required|string'
         ]);
+
+        $lowongan = Lowongan::find($id);
+
+        if (!$lowongan) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lowongan tidak ditemukan'
+            ], 404);
+        }
 
         $lowongan->update([
             'status_approval' => 'rejected',
-            'catatan_admin' => $validated['catatan_admin'],
+            'status' => 'nonaktif',
+            'catatan_admin' => $request->input('catatan_admin')
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Lowongan magang berhasil ditolak.',
-            'data' => $lowongan->load('perusahaan'),
+            'message' => 'Lowongan ditolak',
+            'data' => $lowongan->load('perusahaan.user')
+        ]);
+    }
+
+    // Get statistics
+    public function statistics()
+    {
+        $stats = [
+            'total' => Lowongan::count(),
+            'pending' => Lowongan::where('status_approval', 'pending')->count(),
+            'approved' => Lowongan::where('status_approval', 'approved')->count(),
+            'rejected' => Lowongan::where('status_approval', 'rejected')->count(),
+            'aktif' => Lowongan::where('status', 'aktif')->count(),
+            'magang' => Lowongan::where('tipe_lowongan', 'magang')->count(),
+            'kerja' => Lowongan::where('tipe_lowongan', 'kerja')->count(),
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats
         ]);
     }
 }
