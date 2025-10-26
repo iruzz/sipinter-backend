@@ -47,4 +47,9 @@ class Lowongan extends Model
     {
         return $this->perusahaan ? $this->perusahaan->nama_perusahaan : null;
     }
+
+    public function lamarans()
+{
+    return $this->hasMany(LamaranMagang::class, 'lowongan_id');
+}
 }

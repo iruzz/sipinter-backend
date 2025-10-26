@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PerusahaanProfileController;
 use App\Http\Controllers\AdminLowonganMagangController;
+use App\Http\Controllers\AdminLamaranMagangController;
 use App\Http\Controllers\SiswaProfileController; // ← Tambah import ini
 
 // === PUBLIC ROUTES ===
@@ -55,6 +56,16 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
             Route::delete('/lowongan/{id}', [AdminLowonganMagangController::class, 'destroy']);
             Route::post('/lowongan/{id}/approve', [AdminLowonganMagangController::class, 'approve']);
             Route::post('/lowongan/{id}/reject', [AdminLowonganMagangController::class, 'reject']);
+
+             Route::get('/lamaran', [AdminLamaranMagangController::class, 'index']);
+            Route::get('/lamaran/statistics', [AdminLamaranMagangController::class, 'statistics']);
+            Route::get('/lamaran/{id}', [AdminLamaranMagangController::class, 'show']);
+            Route::put('/lamaran/{id}', [AdminLamaranMagangController::class, 'update']);
+            Route::delete('/lamaran/{id}', [AdminLamaranMagangController::class, 'destroy']);
+            Route::post('/lamaran/{id}/set-interview', [AdminLamaranMagangController::class, 'setInterview']);
+            Route::post('/lamaran/{id}/terima', [AdminLamaranMagangController::class, 'terima']);
+            Route::post('/lamaran/{id}/tolak', [AdminLamaranMagangController::class, 'tolak']);
+        
         
         });
 
