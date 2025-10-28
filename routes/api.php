@@ -7,6 +7,7 @@ use App\Http\Controllers\PerusahaanProfileController;
 use App\Http\Controllers\AdminLowonganMagangController;
 use App\Http\Controllers\AdminLamaranMagangController;
 use App\Http\Controllers\PenempatanMagangController;
+use App\Http\Controllers\PenilaianMagangController;
 use App\Http\Controllers\SiswaProfileController; // ← Tambah import ini
 
 // === PUBLIC ROUTES ===
@@ -67,13 +68,17 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
             Route::post('/lamaran/{id}/terima', [AdminLamaranMagangController::class, 'terima']);
             Route::post('/lamaran/{id}/tolak', [AdminLamaranMagangController::class, 'tolak']);
         
-             Route::get('/penempatan', [PenempatanMagangController::class, 'index']);
-        Route::get('/penempatan/lamaran-diterima', [PenempatanMagangController::class, 'lamaranDiterima']);
-        Route::get('/penempatan/guru-pembimbing', [PenempatanMagangController::class, 'getGuruPembimbing']);
-        Route::post('/penempatan', [PenempatanMagangController::class, 'store']);
-        Route::get('/penempatan/{id}', [PenempatanMagangController::class, 'show']);
-        Route::put('/penempatan/{id}', [PenempatanMagangController::class, 'update']);
-        Route::delete('/penempatan/{id}', [PenempatanMagangController::class, 'destroy']);
+            Route::get('/penempatan', [PenempatanMagangController::class, 'index']);
+            Route::get('/penempatan/lamaran-diterima', [PenempatanMagangController::class, 'lamaranDiterima']);
+            Route::get('/penempatan/guru-pembimbing', [PenempatanMagangController::class, 'getGuruPembimbing']);
+            Route::post('/penempatan', [PenempatanMagangController::class, 'store']);
+            Route::get('/penempatan/{id}', [PenempatanMagangController::class, 'show']);
+            Route::put('/penempatan/{id}', [PenempatanMagangController::class, 'update']);
+            Route::delete('/penempatan/{id}', [PenempatanMagangController::class, 'destroy']);
+
+             Route::get('/penilaian', [PenilaianMagangController::class, 'index']);
+        Route::get('/penilaian/penempatan/{id}', [PenilaianMagangController::class, 'getByPenempatan']);
+        Route::delete('/penilaian/{id}', [PenilaianMagangController::class, 'destroy']);
         });
 
     // === SISWA ===

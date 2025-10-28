@@ -13,8 +13,8 @@ return new class extends Migration
             $table->foreignId('siswa_id')->constrained('siswa_profiles')->onDelete('cascade');
             $table->foreignId('lowongan_id')->constrained('lowongan')->onDelete('cascade');
             $table->enum('status', ['pending', 'diterima', 'ditolak', 'interview', 'proses'])->default('pending');
-            $table->string('surat_lamaran'); // path file
-            $table->string('cv_file'); // path file
+            $table->string('surat_lamaran')->nullable(); // path file
+            $table->string('cv_file')->nullable(); // path file
             $table->string('portofolio_file')->nullable(); // path file
             $table->text('catatan_siswa')->nullable();
             $table->text('catatan_perusahaan')->nullable();
