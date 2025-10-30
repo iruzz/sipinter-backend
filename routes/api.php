@@ -8,7 +8,13 @@ use App\Http\Controllers\AdminLowonganMagangController;
 use App\Http\Controllers\AdminLamaranMagangController;
 use App\Http\Controllers\PenempatanMagangController;
 use App\Http\Controllers\PenilaianMagangController;
-use App\Http\Controllers\SiswaProfileController; // ← Tambah import ini
+use App\Http\Controllers\SiswaProfileController; 
+use App\Http\Controllers\Siswa\SiswaLowonganController;
+use App\Http\Controllers\Siswa\SiswaLamaranController;
+use App\Http\Controllers\Siswa\SiswaMagangController;
+
+
+// ← Tambah import ini
 
 // === PUBLIC ROUTES ===
 Route::post('/register', [AuthController::class, 'register']);
@@ -43,14 +49,14 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
             Route::delete('/siswa-profiles/{id}', [SiswaProfileController::class, 'destroy']);
             Route::post('/siswa-profiles/{id}/verify', [SiswaProfileController::class, 'verify']);
             Route::post('/siswa-profiles/{id}/reject', [SiswaProfileController::class, 'reject']);
-
+            // Perusahaan
              Route::get('/perusahaan-profiles', [PerusahaanProfileController::class, 'index']);
             Route::get('/perusahaan-profiles/{id}', [PerusahaanProfileController::class, 'showById']);
             Route::put('/perusahaan-profiles/{id}', [PerusahaanProfileController::class, 'update']);
             Route::delete('/perusahaan-profiles/{id}', [PerusahaanProfileController::class, 'destroy']);
             Route::post('/perusahaan-profiles/{id}/verify', [PerusahaanProfileController::class, 'verify']);
             Route::post('/perusahaan-profiles/{id}/reject', [PerusahaanProfileController::class, 'reject']);
-            
+            // Lowongan
              Route::get('/lowongan', [AdminLowonganMagangController::class, 'index']);
             Route::get('/lowongan/statistics', [AdminLowonganMagangController::class, 'statistics']);
             Route::get('/lowongan/{id}', [AdminLowonganMagangController::class, 'show']);
@@ -58,7 +64,7 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
             Route::delete('/lowongan/{id}', [AdminLowonganMagangController::class, 'destroy']);
             Route::post('/lowongan/{id}/approve', [AdminLowonganMagangController::class, 'approve']);
             Route::post('/lowongan/{id}/reject', [AdminLowonganMagangController::class, 'reject']);
-
+            // Lamaran
              Route::get('/lamaran', [AdminLamaranMagangController::class, 'index']);
             Route::get('/lamaran/statistics', [AdminLamaranMagangController::class, 'statistics']);
             Route::get('/lamaran/{id}', [AdminLamaranMagangController::class, 'show']);
@@ -88,6 +94,15 @@ Route::middleware(['auth:sanctum'])->group(function () { // ← Hapus 'verified'
         // Siswa Profile
         Route::get('/profile', [SiswaProfileController::class, 'show']);
         Route::post('/profile', [SiswaProfileController::class, 'store']);
+
+         // ✅ TAMBAHKAN ROUTE INI:
+    Route::get('/lowongan', [App\Http\Controllers\Siswa\SiswaLowonganController::class, 'index']);
+    Route::get('/lowongan/{id}', [App\Http\Controllers\Siswa\SiswaLowonganController::class, 'show']);
+    Route::post('/lamaran', [App\Http\Controllers\Siswa\SiswaLamaranController::class, 'store']);
+    Route::get('/lamaran', [App\Http\Controllers\Siswa\SiswaLamaranController::class, 'index']);
+    Route::get('/lamaran/{id}', [App\Http\Controllers\Siswa\SiswaLamaranController::class, 'show']);
+    Route::delete('/lamaran/{id}', [App\Http\Controllers\Siswa\SiswaLamaranController::class, 'destroy']);
+    Route::get('/magang', [App\Http\Controllers\Siswa\SiswaMagangController::class, 'index']);
     });
 
     // === GURU ===

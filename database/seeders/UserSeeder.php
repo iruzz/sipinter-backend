@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'is_verified' => true,
+            'is_active' => true, // ← TAMBAH INI
             'email_verified_at' => now(),
         ]);
 

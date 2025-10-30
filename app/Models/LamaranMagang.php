@@ -13,37 +13,32 @@ class LamaranMagang extends Model
 
     protected $fillable = [
         'siswa_id',
-        'lowongan_id',
+        'lowongan_id', 
         'status',
         'surat_lamaran',
         'cv_file',
         'portofolio_file',
         'catatan_siswa',
         'catatan_perusahaan',
+        'nomor_wa', // ✅ TAMBAHAN
         'tanggal_apply',
-        'tanggal_interview',
+        'tanggal_interview'
     ];
 
     protected $casts = [
         'tanggal_apply' => 'date',
-        'tanggal_interview' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'tanggal_interview' => 'datetime'
     ];
 
-    // Relationships
+    // Relasi ke siswa
     public function siswa()
     {
         return $this->belongsTo(SiswaProfile::class, 'siswa_id');
     }
 
+    // Relasi ke lowongan
     public function lowongan()
     {
         return $this->belongsTo(Lowongan::class, 'lowongan_id');
-    }
-
-      public function penempatan()
-    {
-        return $this->hasOne(PenempatanMagang::class, 'lamaran_id');
     }
 }

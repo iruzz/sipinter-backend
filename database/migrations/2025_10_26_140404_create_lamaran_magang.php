@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('portofolio_file')->nullable(); // path file
             $table->text('catatan_siswa')->nullable();
             $table->text('catatan_perusahaan')->nullable();
+            $table->string('nomor_wa')->nullable(); // ✅ TAMBAHAN: Field nomor WhatsApp
             $table->date('tanggal_apply');
             $table->dateTime('tanggal_interview')->nullable();
             $table->timestamps();
